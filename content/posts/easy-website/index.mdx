@@ -1,0 +1,62 @@
+---
+title: How anyone can make and deploy a modern website for free
+slug: "/easy-website"
+date: 2020-09-04
+description:
+tags:
+  - Tutorial
+  - Beginner
+  - Web Development
+---
+
+Making a website today is easier than ever. With tools like [Squarespace](https://squarespace.com) and [Wix](https://wix.com) you can easily create an appealing (if boring) website using no code at all.
+
+This is a great solution for most; however, it comes with some disadvantages:
+
+- Cost: Most site builders will cost you _at least_ $10 per month.
+- Lack of Customization: Services like Squarespace provide numerous themes. These are good, but Site Builders usually lack granular control over your site.
+- Dynamic Content & Functionality: Site Builders like these won't allow you to add custom functionality to your site or give you the ability to serve dynamic content.
+
+For the slightly more tech-savvy, there's a better solution anyone can do for free: using website templates you can host for free using services like [GitHub Pages](https://pages.github.com) or [Netlify](https://netlify.com).
+
+I'll be demonstrating how you can quickly and easily setup and host a website using [Gatsby](https://gatsbyjs.org), a static site generator which pre-renders React components, along with Netlify for hosting. It's popular for simple static websites and has an extensive template library which we'll be taking advantage of. There are many other alternatives you could use, like [Jekyll](https://jekyllrb.com).
+
+First, we'll need to install the Gatsby CLI:
+
+```noLineNumbers
+npm install -g gatsby
+```
+
+### Using a Gatsby starter
+
+Now, we'll need to find a Gatsby template from the [Starter Library](https://www.gatsbyjs.com/starters/?v=2). I'll be using [Leko Arts](https://lekoarts.de/en)' [Cara Theme](https://github.com/LekoArts/gatsby-starter-portfolio-cara). Each starter will have different instructions for modifying their content, so you should follow the instructions for your starter. I'll show the process for the Cara theme.
+
+Then, download your starter:
+
+```noLineNumbers
+gatsby new my-awesome-website https://github.com/LekoArts/gatsby-starter-portfolio-cara
+```
+
+The next part will be different depending on your template, but generally you'll need to modify some files with your content. Most starters will have instructions to modify the content. Run:
+
+```noLineNumbers
+gatsby develop
+```
+
+to see your changes whenever you save. You don't even have to reload!
+
+### Modifying the starter
+
+Templates are great, but sometimes you need to tweak the template to fit your needs. Thankfully, Gatsby makes this super easy with Shadowing! Shadowing allows you to overwrite files from your theme. You can read the full guide [here](https://www.gatsbyjs.com/docs/themes/shadowing/) but essentially you create a directory inside `src/` with the name of your theme. For my template, it would be `src/@lekoarts/gatsby-theme-cara/`. Any file you put there will shadow (overwrite) the theme's source code.
+
+### Deploying
+
+Once you're happy with your site you'll need to host it. Thankfully, Netlify has made this process a breeze.
+
+First, upload your site to GitHub or GitLab. This isn't a requirement but it'll make deployment much simpler. Then, you'll need to create a free Netlify account [here](https://netlify.com/signup). On your Netlify dashboard, you'll see a button to create a new site from Git. Click that and select the repository you uploaded.
+
+Click "Deploy site" and you're done!
+
+### Going Further
+
+You can create your own Gatsby site from scratch, by adding React components in the `src/pages/` directory. If you want to serve dynamic content without rebuilding, you'll need to use a different React site generator like [Next.js](https://nextjs.org) or if you don't care about server-side rendering, [Create React App](https://create-react-app.dev).

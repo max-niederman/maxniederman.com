@@ -1,0 +1,124 @@
+---
+title: "Web analytics from scratch - Part 1: Page Views"
+slug: "/scratch-analytics/1-page-views"
+date: 2020-09-11
+description: Creating a simple web analytics service from scratch.
+tags:
+  - Tutorial
+  - Analytics
+  - Web Development
+---
+
+Google Analytics is used in nearly 70% of websites[^1] for a good reason. It's a very powerful tool, and more importantly, it's free and easy to use, but there's a downside: Google owns and uses all of your data. "Just use Matamo or Open Web Analytics!" I hear you say, and you're right, that's the easiest solution, but I think we can all agree it's no fun.
+
+In this series we'll be creating a simple website analytics service from scratch. This part will be about creating a basic API to keep track of raw page views, but more statistics will obviously be added later.
+
+[^1] According to [builtwith.com](https://trends.builtwith.com/analytics).
+
+### Setting up a Web Server
+
+First we'll need to setup a basic web server. I'll be using [Fastify](https://fastify.io), but it shouldn't be too difficult to use Express or another framework.
+
+```typescript:title=app.ts
+import fastify from "fastify";
+
+const app = fastify({ logger: true });
+
+// Routes
+app.get("/", async (req, reply) => {
+  hello: "world";
+});
+
+const port = Number(process.env.PORT) || 3000;
+app
+  .listen(port, "0.0.0.0")
+  .then(() => console.log(`Listening on port ${port}`));
+```
+
+Now that we have a web server, we can add a route the client will use when it loads the page:
+
+```typescript:title=routes/index.ts
+import { FastifyPluginCallback } from "fastify";
+
+const plugin: FastifyPluginCallback = async (fastify, opts, done) => {
+  fastify.post("/tracker", async (req, reply) => {
+    if (typeof req.body !== "object") return;
+
+    // Record client data
+
+    return { success: true, message: "Recorded analytics data" };
+  });
+
+  done();
+};
+
+export default plugin;
+```
+
+And then register it in `app.ts`:
+
+```typescript:title=app.ts
+import fastify from "fastify";
+import routes from "./routes";
+
+const app = fastify({ logger: true });
+app.register(routes);
+
+const port = Number(process.env.PORT) || 3000;
+app
+  .listen(port, "0.0.0.0")
+  .then(() => console.log(`Listening on port ${port}`));
+```
+
+### Storing data
+
+Now that the client can send us information, we'll need a way to store it. Since we won't be storing personal data as per the GDPR and CCPA, we'll essentially just be storing a bunch of counters. I decided [Redis](https://redis.io) would be perfect for this.
+
+With Fastify, we can share a single Redis client using the `fastify-redis` plugin:
+
+```typescript:title=app.ts
+import fastifyRedis from "fastify-redis";
+
+app.register(fastifyRedis, {
+  host: process.env.REDIS_HOST || "127.0.0.1",
+  port: Number(process.env.REDIS_PORT) || 6379,
+});
+```
+
+Then we can keep track of views like this:
+
+```typescript:title=routes/index.ts
+fastify.post("/tracker", async (req, reply) => {
+  if (typeof req.body !== "object") return;
+
+  await fastify.redis.incr("views");
+
+  return { success: true, message: "Recorded analytics data" };
+});
+```
+
+If we then call this endpoint a few times we can see the count in our redis console like this:
+
+```noLineNumbers
+> GET views
+"3"
+```
+
+### Pageviews
+
+We'll obviously want to store more data, like views per-page. First, we can add a `resource` property to the tracker endpoint:
+
+```typescript:title=routes/index.ts
+fastify.post("/tracker", async (req, reply) => {
+  if (typeof req.body !== "object") return;
+  const url = new URL(req.body.url);
+
+  await redis.hincrby(`${url.hostname}:resources`, url.pathname, 1);
+
+  return { success: true, message: "Recorded analytics data" };
+});
+```
+
+---
+
+Stay tuned for the next part of this series, in which we'll be creating a client that can log this information, and endpoints to get analytics data once it's recorded.

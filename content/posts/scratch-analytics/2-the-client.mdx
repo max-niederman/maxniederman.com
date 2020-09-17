@@ -1,0 +1,105 @@
+---
+title: "Web analytics from scratch - Part 2: The Client"
+slug: "/scratch-analytics/2-the-client"
+date: 2020-09-18
+description: Creating a simple web analytics service from scratch.
+tags:
+  - Tutorial
+  - Analytics
+  - Web Development
+---
+
+_This is Part 2 of this series. You can read the first part [here](/scratch-analytics/1-page-views)_
+
+### Tracker Client
+
+Now that we have a server which can keep track of our analytics data, we need to add a client which will tell the server the page has been loaded.
+This is extremely simple since we only have to send a single request with two JSON properties when the page loads:
+
+```js
+var analytics = async (apiBase) => {
+  await fetch(`${apiBase}/tracker`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ url: location.href }),
+  });
+};
+```
+
+Then we can just load and call it like this:
+
+```html
+<script src="analytics.js"></script>
+<script>
+  analytics("http://yourserver.com");
+</script>
+```
+
+And that's really all it takes to implement our super-simple analytics on the client side. This has the added benefit that the bundle size of the client is negligible (<250B unminified).
+
+### Getting Analytics Data
+
+We have a way to collect and store analytics data, but now we need a way to get it.
+
+We can already look at the data using `redis-cli` like this:
+
+```noLineNumbers:title=redis-cli
+> HGETALL <YOUR_HOST>:resources
+1) "/"
+2) "42"
+3) "/index.html"
+4) "7"
+```
+
+However, this isn't a great solution for quickly looking at analytics data. We want some way to present this data to the user nicely. We can do this by adding an endpoint to our API to get this data:
+
+```ts:title=routes/index.ts
+fastify.get("/data", async (req, reply) => {
+  const resources = await fastify.redis.hgetall(`${req.query?.host}:resource`);
+  return { resources };
+});
+```
+
+Now if we call this by making an HTTP request with a `host` query parameter and get back some JSON like this:
+
+```json
+{
+  "/": "42",
+  "/index.html": "7"
+}
+```
+
+Now you might notice that the numbers are, in fact, strings. This is because Redis stores everything as a string, so we'll need to cast it to a number:
+
+```ts:title=routes/index.ts
+// Helper function to cast Object values
+const castValues = <T>(
+  object: Record<string, unknown>,
+  castFn: (value: unknown) => T
+): Record<string, T> =>
+  Object.fromEntries(
+    Object.entries(object).map(([key, val]) => [key, castFn(val)])
+  );
+
+fastify.get("/data", async (req, reply) => {
+  const resources = await fastify.redis.hgetall(`${req.query?.host}:resource`);
+
+  // Cast values to numbers
+  return { resources: castValues(resources, Number) };
+});
+```
+
+Now it'll reply this:
+
+```json
+{
+  "/": 42,
+  "/index.html": 7
+}
+```
+
+---
+
+In the next part of this series, we'll add more statistics and work on a visual dashboard.

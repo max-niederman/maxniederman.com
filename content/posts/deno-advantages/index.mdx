@@ -1,0 +1,72 @@
+---
+title: Why you should try using Deno
+slug: "/deno-advantages"
+date: 2020-09-25
+description: Out with Node, and in with Deno, the superior JS runtime.
+banner: ./banner.jpg
+tags:
+  - JavaScript
+---
+
+From [Deno's website](https://deno.land):
+
+> Deno is a simple, modern and secure runtime for JavaScript and TypeScript that uses V8 and is built in Rust.
+>
+> - Secure by default. No file, network, or environment access, unless explicitly enabled.
+> - Supports TypeScript out of the box.
+> - Ships only a single executable file.
+> - Has built-in utilities like a dependency inspector (deno info) and a code formatter (deno fmt).
+> - Has a set of reviewed (audited) standard modules that are guaranteed to work with Deno: deno.land/std
+
+[Deno](https://deno.land) aims to replace Node.js as a JS runtime for servers. It's even led by the original creator of Node.js, Ryan Dahl, and it's created with the goal of fixing the biggest problems with Node.js.
+
+### The Main Advantage of Deno
+
+Have you ever started working on a Node project and ended up spending upwards of 15 minutes _just to setup_ all of your additional tooling like comilers (TypeScript, Babel, CoffeeScript, etc.), testing frameworks (Jest, Cypress, Mocha, Chai, etc.), linters and formatters, and more. I know I sure have, and it really sucks. I want to get coding as quickly as possible, and Deno is vastly superior to Node in this matter. Deno has the following features built in, no configuration necessary:
+
+#### Built-in TypeScript Support
+
+Deno will run your TypeScript code without ever having to touch a `tsconfig.json` file. This way you can focus on your code, rather than transforming it to JS. You can also use your existing JavaScript code as well.
+
+#### Built-in Testing
+
+Deno has a built-in test runner that you can use for testing JavaScript or TypeScript code. You can write tests inline in your files like this:
+
+```ts
+Deno.test("1 plus 2 equals 3", () => {
+  const x = 1 + 2;
+  assertEquals(x, 3);
+});
+```
+
+And run all tests using the `deno` executable:
+
+```bash
+deno test
+```
+
+You can read more about Deno's tests [here](https://deno.land/manual/testing).
+
+#### Built-in Linter and Formatter
+
+Deno has both a linter and formatter built-in, available through the `deno` binary. You can read the linter docs [here](https://deno.land/manual/tools/linter) and the formatter docs [here](https://deno.land/manual/tools/formatter). No need to setup your own unless you want to.
+
+#### Built-in Bundler
+
+Deno has a built-in bundler to package your code, so you don't need to setup your own bundler either.
+
+---
+
+Deno also has some other advantages over writing in Node:
+
+#### Secure by Default
+
+Access to the filesystem, network, environment, and the ability to run subprocesses all must be explicitly enabled with CLI options. You can even allow access to only certain hosts or files.
+
+#### Browser compatibility
+
+Node.js lacks a lot of browser APIs. For instance, if you wanted to fetch a resource over HTTP, you could just use the `fetch` api. In Node, you would have to import a whole library just to do this. This is not the case for Deno. Deno includes the majority of browser APIs. In fact, Deno code is designed to be as compatible as possible with the browser. Anything specific to Deno is under the `Deno` namespace, so if you remove that from your code, it should run in any modern browser. It can also run WebAssembly binaries.
+
+---
+
+These are some of the reasons that I personally use Deno rather than Node whenver I can.
